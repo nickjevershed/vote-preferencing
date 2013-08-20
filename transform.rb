@@ -21,15 +21,29 @@ def average(a)
   s.to_f / a.count
 end
 
-def group_info(group_label)
-  group = JSON.load(File.open("belowtheline/data/groups/#{group_label}.json"))
-  raise "Can't currently handle multiple parties in a group" if group["parties"].count > 1
-  group_party = group["parties"].first
+def group_info(group_file)
+  group = JSON.load(File.open(group_file))
+  # Special handling for coalition. We will treat them as one party
+  if group["parties"] == ["lib", "nat"]
+    group_party = "coa"
+  elsif group["parties"].count <= 1
+    group_party = group["parties"].first
+  else
+    raise "Can't currently handle multiple parties in a group"
+  end
 
-  raise "Don't currently support more than one ticket per group" if group["tickets"].count > 1
+  if group_party.nil?
+    return {:party => "ind"}
+  end
+
+  puts "Don't currently support more than one ticket per group" if group["tickets"].count > 1
+  # Just going to take the first ticket for the time being. We really should calculate the
+  # scores for each ticket and then average them
   ticket = group["tickets"].first
 
   party_order = ticket.map{|t| party(t)}
+  # Do coalition substitution
+  party_order = party_order.map{|p| (p == "lib" || p == "nat") ? "coa" : p}
   party_scores = {}
   party_order.each_with_index do |party, i|
     party_scores[party] = (party_scores[party] || []).push(i)
@@ -46,4 +60,6 @@ def group_info(group_label)
   {:party => group_party, :distances => average_party_scores_tweaked}
 end
 
-p group_info("nsw-A")
+Dir.glob("belowtheline/data/groups/nsw-*.json").each do |file|
+  p group_info(file)
+end
