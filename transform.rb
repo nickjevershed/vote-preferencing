@@ -21,31 +21,29 @@ def average(a)
   s.to_f / a.count
 end
 
-group = JSON.load(File.open('belowtheline/data/groups/nsw-A.json'))
-raise "Can't currently handle multiple parties in a group" if group["parties"].count > 1
-group_party = group["parties"].first
+def group_info(group_label)
+  group = JSON.load(File.open("belowtheline/data/groups/#{group_label}.json"))
+  raise "Can't currently handle multiple parties in a group" if group["parties"].count > 1
+  group_party = group["parties"].first
 
-raise "Don't currently support more than one ticket per group" if group["tickets"].count > 1
-ticket = group["tickets"].first
+  raise "Don't currently support more than one ticket per group" if group["tickets"].count > 1
+  ticket = group["tickets"].first
 
-puts "Group A ticket:"
-puts "Party: #{group_party}"
-puts "----"
-party_order = ticket.map{|t| party(t)}
-party_scores = {}
-party_order.each_with_index do |party, i|
-  party_scores[party] = (party_scores[party] || []).push(i)
+  party_order = ticket.map{|t| party(t)}
+  party_scores = {}
+  party_order.each_with_index do |party, i|
+    party_scores[party] = (party_scores[party] || []).push(i)
+  end
+  average_party_scores = {}
+  party_scores.each do |p, v|
+    average_party_scores[p] = average(v)
+  end
+  # Tweak things so that its own party has a "distance" of 0
+  average_party_scores_tweaked = {}
+  average_party_scores.each do |p,v|
+    average_party_scores_tweaked[p] = v - average_party_scores[group_party]
+  end
+  {:party => group_party, :distances => average_party_scores_tweaked}
 end
-average_party_scores = {}
-party_scores.each do |p, v|
-  average_party_scores[p] = average(v)
-end
-# Tweak things so that its own party has a "distance" of 0
-average_party_scores_tweaked = {}
-average_party_scores.each do |p,v|
-  average_party_scores_tweaked[p] = v - average_party_scores[group_party]
-end
-p average_party_scores_tweaked
-#ticket.each do |person_label|
-#  puts party(person_label)
-#end
+
+p group_info("nsw-A")
