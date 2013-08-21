@@ -60,6 +60,21 @@ def group_info(group_file)
   {:party => group_party, :distances => average_party_scores_tweaked}
 end
 
+infos = {}
 Dir.glob("belowtheline/data/groups/nsw-*.json").each do |file|
-  p group_info(file)
+  i = group_info(file)
+  infos[i[:party]] = i[:distances]
 end
+
+parties = infos.keys.uniq.sort.reject{|p| p == "ind"}
+
+def party_hash_to_array(infos, parties)
+  r = []
+  parties.each do |party|
+    r << infos[party]
+  end
+  r
+end
+
+matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
+p matrix
