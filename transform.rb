@@ -12,6 +12,7 @@
 # 2. We're currently ignoring independent candidates. We could include them by lumping candidates together
 # by group rather than party. We're currently effectively doing this with the Lib/Nat coalition. We could
 # do this with the independents as well
+# 3. Combine data from different states
 
 require "json"
 
@@ -33,7 +34,7 @@ end
 def group_info(group_file)
   group = JSON.load(File.open(group_file))
   # Special handling for coalition. We will treat them as one party
-  if group["parties"] == ["lib", "nat"]
+  if group["parties"] == ["lib", "nat"] || group["parties"] == ["lib"] || group["parties"] == ["nat"]
     group_party = "coa"
   elsif group["parties"].count <= 1
     group_party = group["parties"].first
@@ -63,6 +64,7 @@ def group_info(group_file)
   end
   # Tweak things so that its own party has a "distance" of 0
   average_party_scores_tweaked = {}
+  raise "group_party #{group_party} couldn't be found" if average_party_scores[group_party].nil?
   average_party_scores.each do |p,v|
     average_party_scores_tweaked[p] = v - average_party_scores[group_party]
   end
@@ -80,7 +82,7 @@ end
 def lookup_party_full_name(party_code)
   # Special handling for our "made up" party the coalition
   if party_code == "coa"
-    "Coalition"
+    "Coalition (Lib/Nat)"
   else
     party = JSON.load(File.open("belowtheline/data/parties/#{party_code}.json"))
     party["name"]
@@ -99,16 +101,20 @@ def write_distance_matrix(filename, parties_full_names, matrix)
   end
 end
 
-infos = {}
-Dir.glob("belowtheline/data/groups/nsw-*.json").each do |file|
-  i = group_info(file)
-  infos[i[:party]] = i[:distances]
+def process_state(state)
+  infos = {}
+  Dir.glob("belowtheline/data/groups/#{state}-*.json").each do |file|
+    i = group_info(file)
+    infos[i[:party]] = i[:distances]
+  end
+
+  parties = infos.keys.uniq.sort.reject{|p| p == "ind"}
+
+  matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
+  # Convert parties to full names
+  parties_full_names = parties.map{|p| lookup_party_full_name(p)}
+
+  write_distance_matrix("distance_#{state}.dat", parties_full_names, matrix)
 end
 
-parties = infos.keys.uniq.sort.reject{|p| p == "ind"}
-
-matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
-# Convert parties to full names
-parties_full_names = parties.map{|p| lookup_party_full_name(p)}
-
-write_distance_matrix("distance_nsw.dat", parties_full_names, matrix)
+["act", "nsw", "nt", "qld", "sa", "tas", "vic", "wa"].each{|s| process_state(s)}
