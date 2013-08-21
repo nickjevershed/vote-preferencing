@@ -12,7 +12,6 @@
 # 2. We're currently ignoring independent candidates. We could include them by lumping candidates together
 # by group rather than party. We're currently effectively doing this with the Lib/Nat coalition. We could
 # do this with the independents as well
-# 3. Output full names of parties rather than the party codes
 
 require "json"
 
@@ -86,13 +85,25 @@ def party_hash_to_array(infos, parties)
   r
 end
 
+def lookup_party_full_name(party_code)
+  # Special handling for our "made up" party the coalition
+  if party_code == "coa"
+    "Coalition"
+  else
+    party = JSON.load(File.open("belowtheline/data/parties/#{party_code}.json"))
+    party["name"]
+  end
+end
+
 matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
+# Convert parties to full names
+parties_full_names = parties.map{|p| lookup_party_full_name(p)}
 puts "Writing data to files distance.dat..."
 File.open("distance.dat", "w") do |f|
-  f << parties.join(" ") << "\n"
+  f << parties_full_names.map{|p| '"' + p + '"'}.join(" ") << "\n"
   index = 0
   matrix.each do |row|
-    f << parties[index] << " " << row.join(" ") << "\n"
+    f << '"' << parties_full_names[index] << '" ' << row.join(" ") << "\n"
     index += 1
   end
 end
