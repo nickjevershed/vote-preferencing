@@ -1,7 +1,7 @@
 # Run this within R with:
 # source("mds.R")
 
-d = read.table("distance.dat", header=TRUE)
+d = read.table("distance_nsw.dat", header=TRUE)
 # Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
 d2 = d + t(d)
 fit <- cmdscale(d2, eig=TRUE, k=2)

@@ -98,8 +98,8 @@ end
 matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
 # Convert parties to full names
 parties_full_names = parties.map{|p| lookup_party_full_name(p)}
-puts "Writing data to files distance.dat..."
-File.open("distance.dat", "w") do |f|
+puts "Writing data to files distance_nsw.dat..."
+File.open("distance_nsw.dat", "w") do |f|
   f << parties_full_names.map{|p| '"' + p + '"'}.join(" ") << "\n"
   index = 0
   matrix.each do |row|
