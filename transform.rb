@@ -87,4 +87,12 @@ def party_hash_to_array(infos, parties)
 end
 
 matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
-p matrix
+puts "Writing data to files distance.dat..."
+File.open("distance.dat", "w") do |f|
+  f << parties.join(" ") << "\n"
+  index = 0
+  matrix.each do |row|
+    f << parties[index] << " " << row.join(" ") << "\n"
+    index += 1
+  end
+end
