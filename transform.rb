@@ -4,6 +4,16 @@
 # package to do some multidimensional scaling magic as a way to try to visualise the "closeness"
 # of different parties
 
+# TODO:
+# 1. Currently we will get different results depending on the number of candidates in a different group.
+# So, for instance if group A preferences group B first in the 4th spot and there are 4 members of group B
+# it will have an average distance A<->B of 5.5. If there are less members in group B that number will be
+# smaller. Maybe we should look at taking the minimum distance instead (rather than the average)
+# 2. We're currently ignoring independent candidates. We could include them by lumping candidates together
+# by group rather than party. We're currently effectively doing this with the Lib/Nat coalition. We could
+# do this with the independents as well
+# 3. Output full names of parties rather than the party codes
+
 require "json"
 
 def party(person_label)
