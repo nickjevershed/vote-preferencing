@@ -69,14 +69,6 @@ def group_info(group_file)
   {:party => group_party, :distances => average_party_scores_tweaked}
 end
 
-infos = {}
-Dir.glob("belowtheline/data/groups/nsw-*.json").each do |file|
-  i = group_info(file)
-  infos[i[:party]] = i[:distances]
-end
-
-parties = infos.keys.uniq.sort.reject{|p| p == "ind"}
-
 def party_hash_to_array(infos, parties)
   r = []
   parties.each do |party|
@@ -95,15 +87,28 @@ def lookup_party_full_name(party_code)
   end
 end
 
+def write_distance_matrix(filename, parties_full_names, matrix)
+  puts "Writing data to files #{filename}..."
+  File.open(filename, "w") do |f|
+    f << parties_full_names.map{|p| '"' + p + '"'}.join(" ") << "\n"
+    index = 0
+    matrix.each do |row|
+      f << '"' << parties_full_names[index] << '" ' << row.join(" ") << "\n"
+      index += 1
+    end
+  end
+end
+
+infos = {}
+Dir.glob("belowtheline/data/groups/nsw-*.json").each do |file|
+  i = group_info(file)
+  infos[i[:party]] = i[:distances]
+end
+
+parties = infos.keys.uniq.sort.reject{|p| p == "ind"}
+
 matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
 # Convert parties to full names
 parties_full_names = parties.map{|p| lookup_party_full_name(p)}
-puts "Writing data to files distance_nsw.dat..."
-File.open("distance_nsw.dat", "w") do |f|
-  f << parties_full_names.map{|p| '"' + p + '"'}.join(" ") << "\n"
-  index = 0
-  matrix.each do |row|
-    f << '"' << parties_full_names[index] << '" ' << row.join(" ") << "\n"
-    index += 1
-  end
-end
+
+write_distance_matrix("distance_nsw.dat", parties_full_names, matrix)
