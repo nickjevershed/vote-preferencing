@@ -35,7 +35,7 @@
 <script>
 
 var width = 960,
-    height = 600;
+    height = 960;
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
@@ -46,12 +46,12 @@ var activeLink;
 var force = d3.layout.force()
     .gravity(0.05)
     .distance(function(d){
-      var score = d.value / 100;
-      var distance = activeLink ? score * 400  : score * 500;
+      var distance = activeLink ? d.individualValue * 4 : d.mutualValue * 5;
       return distance;
     })
+    //.charge(100)
     .charge(function(d){
-      return activeLink ? -100 : -1 * d.value;
+      return activeLink ? -100 : -1 * Math.pow(2, d.mutualValue);
       //return -1 * d.value;
     })
     .size([width, height])
@@ -60,7 +60,7 @@ var force = d3.layout.force()
 var link =  svg.selectAll(".link");
 var node = svg.selectAll(".node");
 
-var linkData, nodeData;
+var mutualLinkData, linkData, nodeData;
 
 function tick(){
 
@@ -90,9 +90,6 @@ function collide(node) {
   ny1 = node.y - r,
   ny2 = node.y + r;
   node.radius = 5;
-  if (node.name === 'Carers Alliance'){
-    console.error('x: ' + node.x)
-  }
   return function(quad, x1, y1, x2, y2) {
     if (quad.point && (quad.point !== node)) {
       var x = node.x - quad.point.x,
@@ -133,12 +130,22 @@ d3.json("nsw.json", function(error, data) {
     delete preferences.Party;
     delete preferences[name];
     _.each(preferences, function(score, target){
+      var scoreF = parseFloat(score)
       json.links.push({
         source: index,
         target: json.nodeIndex[target],
-        value: score
+        value: scoreF,
+        individualValue: scoreF
       });
     });
+  });
+  // let's calculate mutual.. TODO could be so much more efficient
+  _.each(json.links, function(link){
+    coLink = _.detect(json.links, function(l){
+      return l.target === link.source &&
+        l.source == link.target;
+    });
+    link.mutualValue = (link.individualValue + coLink.individualValue) / 2 
   });
   mutual();
 });
@@ -203,12 +210,10 @@ function click(d){
   json.links.forEach(function(link){
     var targetName;
     if (link.source.index === d.index){
-      targetName = link.target.name;
-      link.value = link.value;
-      console.error('compared ' + d.name + ' to ' + targetName + ' and got ' + link.value);
       partyLinks.push(link);
     }
   });
+
   linkData = partyLinks;
   update();
 }
