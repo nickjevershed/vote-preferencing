@@ -13,6 +13,10 @@
 # by group rather than party. We're currently effectively doing this with the Lib/Nat coalition. We could
 # do this with the independents as well
 # 3. Combine data from different states
+# 4. Don't entirely ignore parties that have not submitted a ticket (because we can still get information
+# from how the other parties preference that party)
+# 5. Handle situation where parties submit more than one ticket. At the moment we're just looking at
+# the first ticket
 
 require "json"
 
