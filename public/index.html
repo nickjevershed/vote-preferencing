@@ -10,6 +10,11 @@
   padding: 0.5em;
   stroke: 1px;
   stroke-width: 1.5px;
+  pointer-events: all;
+}
+
+.node:hover{
+  cursor: pointer;
 }
 
 .node circle{
@@ -46,8 +51,8 @@ var force = d3.layout.force()
       return distance;
     })
     .charge(function(d){
-      //return activeLink ? -100 : -1 * d.value;
-      return -1 * d.value;
+      return activeLink ? -100 : -1 * d.value;
+      //return -1 * d.value;
     })
     .size([width, height])
     .on("tick", tick);
@@ -167,12 +172,22 @@ function update(){
   
   var inside = nodeEnter.append("g")
     .attr("class", "node")
+    .attr("pointer-events", "all")
     .on("click", click)
     .call(force.drag);
 
+  inside.append("rect")
+    .attr("y", "-0.5em")
+    .attr('fill', 'none')
+    .attr('x', -20)
+    .attr('width', 100)
+    .attr('height', '1em');
+
   inside.append("text")
-      .attr("dx", -16)
+      .attr("dx", -20)
+      //.attr('text-anchor', 'middle')
       .attr("dy", ".35em")
+      .attr("pointer-events", "none")
       .text(function(d) { return d.name.replace(/ Party.*/, '')});
 }
 
