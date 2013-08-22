@@ -34,8 +34,9 @@ end
 def group_info(group_file)
   group = JSON.load(File.open(group_file))
   # Special handling for coalition. We will treat them as one party
-  if group["parties"] == ["lib", "nat"] || group["parties"] == ["lib"] || group["parties"] == ["nat"]
-    group_party = "coa"
+  if group["parties"] == ["lib", "nat"] || group["parties"] == ["lib"] || group["parties"] == ["nat"] ||
+    group["parties"] == ["nat", "lib"]
+      group_party = "coa"
   elsif group["parties"].count <= 1
     group_party = group["parties"].first
   else
@@ -111,7 +112,7 @@ def process_state(state)
     infos[i[:party]] = i[:distances]
   end
 
-  parties = infos.keys.uniq.sort.reject{|p| p == "ind"}
+  parties = infos.keys.uniq.sort.reject{|p| p == "ind" || infos[p].nil?}
 
   matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
   # Convert parties to full names
