@@ -33,14 +33,15 @@ var svg = d3.select("body").append("svg")
 var activeLink;
 
 var force = d3.layout.force()
-    .gravity(.05)
+    .gravity(0.05)
     .distance(function(d){
       var score = d.value / 100;
       var distance = activeLink ? score * 400  : score * 500;
       return distance;
     })
     .charge(function(d){
-      return activeLink ? -100 : -1 * d.value;
+      //return activeLink ? -100 : -1 * d.value;
+      return -1 * d.value;
     })
     .size([width, height])
     .on("tick", tick);
