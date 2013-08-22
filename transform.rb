@@ -66,17 +66,17 @@ def group_info(group_file)
   party_order.each_with_index do |party, i|
     party_scores[party] = (party_scores[party] || []).push(i)
   end
-  average_party_scores = {}
+  combined_party_scores = {}
   party_scores.each do |p, v|
-    average_party_scores[p] = average(v)
+    combined_party_scores[p] = average(v)
   end
   # Tweak things so that its own party has a "distance" of 0
-  average_party_scores_tweaked = {}
-  raise "group_party #{group_party} couldn't be found" if average_party_scores[group_party].nil?
-  average_party_scores.each do |p,v|
-    average_party_scores_tweaked[p] = v - average_party_scores[group_party]
+  combined_party_scores_tweaked = {}
+  raise "group_party #{group_party} couldn't be found" if combined_party_scores[group_party].nil?
+  combined_party_scores.each do |p,v|
+    combined_party_scores_tweaked[p] = v - combined_party_scores[group_party]
   end
-  {:party => group_party, :distances => average_party_scores_tweaked}
+  {:party => group_party, :distances => combined_party_scores_tweaked}
 end
 
 def party_hash_to_array(infos, parties)
