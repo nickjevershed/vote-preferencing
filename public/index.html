@@ -6,6 +6,12 @@
   stroke: #ccc;
 }
 
+.node{
+  padding: 0.5em;
+  stroke: 1px;
+  stroke-width: 1.5px;
+}
+
 .node circle{
   stroke: #3182bd;
   stroke-width: 1.5px;
@@ -52,6 +58,15 @@ var node = svg.selectAll(".node");
 var linkData, nodeData;
 
 function tick(){
+
+  var q = d3.geom.quadtree(node),
+    i = 0,
+    n = node.length;
+
+  while (++i < n) {
+    q.visit(collide(node[i]));
+  };
+
   link.attr("x1", function(d) { return d.source.x;  })
     .attr("y1", function(d) { return d.source.y;  })
     .attr("x2", function(d) { return d.target.x;  })
@@ -61,6 +76,39 @@ function tick(){
   //  .attr("cy", function(d) { return d.y;  });
 
   node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";  });
+}
+
+function collide(node) {
+  var r,
+  nx1 = node.x - r,
+  nx2 = node.x + r,
+  ny1 = node.y - r,
+  ny2 = node.y + r;
+  node.radius = 5;
+  if (node.name === 'Carers Alliance'){
+    console.error('x: ' + node.x)
+  }
+  return function(quad, x1, y1, x2, y2) {
+    if (quad.point && (quad.point !== node)) {
+      var x = node.x - quad.point.x,
+      y = node.y - quad.point.y,
+      l = Math.sqrt(x * x + y * y),
+      r = 50; //node.radius + quad.point.radius;
+      if (l < r) {
+        l = (l - r) / l * .5;
+        node.x -= x *= l;
+        node.y -= y *= l;
+        quad.point.x += x;
+        quad.point.y += y;
+
+
+      }
+      return x1 > nx2
+        || x2 < nx1
+        || y1 > ny2
+        || y2 < ny1;
+    }
+  };
 }
 
 d3.json("nsw.json", function(error, data) {
@@ -122,13 +170,10 @@ function update(){
     .on("click", click)
     .call(force.drag);
 
-  inside.append("svg:circle")
-      .attr("r", 12);
-
   inside.append("text")
-      .attr("dx", 16)
+      .attr("dx", -16)
       .attr("dy", ".35em")
-      .text(function(d) { return d.name });
+      .text(function(d) { return d.name.replace(/ Party.*/, '')});
 }
 
 function click(d){
