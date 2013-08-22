@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.link {
+  stroke: #ccc;
+}
+
+.node circle{
+  stroke: #3182bd;
+  stroke-width: 1.5px;
+  fill: pink;
+}
+
+.node text {
+  pointer-events: none;
+  font: 10px sans-serif;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/1.3.1/lodash.min.js"></script>
+<script>
+
+var width = 960,
+    height = 500;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var activeLink;
+
+var force = d3.layout.force()
+    .gravity(.05)
+    .distance(function(d){
+      var score = d.value / 100;
+      var distance = activeLink ? score * 400  : score * 500;
+      return distance;
+    })
+    .charge(function(d){
+      return activeLink ? -100 : -1 * d.value;
+    })
+    .size([width, height])
+    .on("tick", tick);
+
+var link =  svg.selectAll(".link");
+var node = svg.selectAll(".node");
+
+var linkData, nodeData;
+
+function tick(){
+  link.attr("x1", function(d) { return d.source.x;  })
+    .attr("y1", function(d) { return d.source.y;  })
+    .attr("x2", function(d) { return d.target.x;  })
+    .attr("y2", function(d) { return d.target.y;  });
+
+  //node.attr("cx", function(d) { return d.x;  })
+  //  .attr("cy", function(d) { return d.y;  });
+
+  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";  });
+}
+
+d3.json("nsw.json", function(error, data) {
+  json = {};
+  json.nodes = [];
+  json.links = [];
+  json.nodeIndex = {};
+  // Extract parties
+  _.each(data, function(row, index){
+    json.nodes.push({ name: row.Party });
+    json.nodeIndex[row.Party] = index;
+  });
+  // Build links
+  json.names = _.pluck(json.nodes, 'name');
+  _.each(json.names, function(name, index){
+    var preferences = data[index];
+    delete preferences.Party;
+    delete preferences[name];
+    _.each(preferences, function(score, target){
+      json.links.push({
+        source: index,
+        target: json.nodeIndex[target],
+        value: score
+      });
+    });
+  });
+  mutual();
+});
+
+function mutual(){
+  nodeData = json.nodes;
+  linkData = json.links;
+  update();
+}
+
+function update(){
+  force
+      .nodes(nodeData)
+      .links(linkData)
+      .start();
+
+  link = link.data(activeLink ? linkData : []);
+
+  // remove anything not in the data anymore
+  link.exit().remove();
+
+  // Add a line
+  link.enter().insert("line", ".node")
+        .attr("class", "link");
+
+  node = node.data(nodeData);
+
+  node.exit().remove();
+
+  var nodeEnter = node.enter()
+  
+  var inside = nodeEnter.append("g")
+    .attr("class", "node")
+    .on("click", click)
+    .call(force.drag);
+
+  inside.append("svg:circle")
+      .attr("r", 12);
+
+  inside.append("text")
+      .attr("dx", 16)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name });
+}
+
+function click(d){
+  if (d3.event.defaultPrevented) return; // ignore drag
+  if (activeLink === d.index){
+    activeLink = null;
+    return mutual();
+  }
+  activeLink = d.index;
+  // rearrange links to be alphabetical distance
+  var partyLinks = [];
+  json.links.forEach(function(link){
+    var targetName;
+    if (link.source.index === d.index){
+      targetName = link.target.name;
+      link.value = link.value;
+      console.error('compared ' + d.name + ' to ' + targetName + ' and got ' + link.value);
+      partyLinks.push(link);
+    }
+  });
+  linkData = partyLinks;
+  update();
+}
+
+</script>
