@@ -5,17 +5,13 @@
 # of different parties
 
 # TODO:
-# 1. Currently we will get different results depending on the number of candidates in a different group.
-# So, for instance if group A preferences group B first in the 4th spot and there are 4 members of group B
-# it will have an average distance A<->B of 5.5. If there are less members in group B that number will be
-# smaller. Maybe we should look at taking the minimum distance instead (rather than the average)
-# 2. We're currently ignoring independent candidates. We could include them by lumping candidates together
+# 1. We're currently ignoring independent candidates. We could include them by lumping candidates together
 # by group rather than party. We're currently effectively doing this with the Lib/Nat coalition. We could
 # do this with the independents as well
-# 3. Combine data from different states
-# 4. Don't entirely ignore parties that have not submitted a ticket (because we can still get information
+# 2. Combine data from different states
+# 3. Don't entirely ignore parties that have not submitted a ticket (because we can still get information
 # from how the other parties preference that party)
-# 5. Handle situation where parties submit more than one ticket. At the moment we're just looking at
+# 4. Handle situation where parties submit more than one ticket. At the moment we're just looking at
 # the first ticket
 
 require "json"
@@ -23,16 +19,6 @@ require "json"
 def party(person_label)
   person = JSON.load(File.open("belowtheline/data/people/#{person_label}.json"))
   person["party"] || "ind"
-end
-
-# Average of an array
-def average(a)
-  # We can do this much more concisely
-  s = 0
-  a.each do |v|
-    s += v
-  end
-  s.to_f / a.count
 end
 
 def group_info(group_file)
@@ -68,15 +54,9 @@ def group_info(group_file)
   end
   combined_party_scores = {}
   party_scores.each do |p, v|
-    combined_party_scores[p] = average(v)
+    combined_party_scores[p] = v.min
   end
-  # Tweak things so that its own party has a "distance" of 0
-  combined_party_scores_tweaked = {}
-  raise "group_party #{group_party} couldn't be found" if combined_party_scores[group_party].nil?
-  combined_party_scores.each do |p,v|
-    combined_party_scores_tweaked[p] = v - combined_party_scores[group_party]
-  end
-  {:party => group_party, :distances => combined_party_scores_tweaked}
+  {:party => group_party, :distances => combined_party_scores}
 end
 
 def party_hash_to_array(infos, parties)
