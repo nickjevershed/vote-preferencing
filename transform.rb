@@ -50,7 +50,10 @@ def group_info(group_file)
   # Just going to take the first ticket for the time being. We really should calculate the
   # scores for each ticket and then average them
   ticket = group["tickets"].first
-
+  if ticket.nil?
+    # No ticket was submitted to the AEC
+    return {:party => group_party}
+  end
   party_order = ticket.map{|t| party(t)}
   # Do coalition substitution
   party_order = party_order.map{|p| (p == "lib" || p == "nat") ? "coa" : p}
