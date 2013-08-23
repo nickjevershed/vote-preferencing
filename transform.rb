@@ -77,6 +77,18 @@ def lookup_party_full_name(party_code)
   end
 end
 
+def write_distance_matrix_as_csv(filename, parties_full_names, matrix)
+  puts "Writing data to files #{filename}..."
+  File.open(filename, "w") do |f|
+    f << (['"Party"'].concat(parties_full_names.map{|p| '"' + p + '"'})).join(",") << "\n"
+    index = 0
+    matrix.each do |row|
+      f << '"' << parties_full_names[index] << '",' << row.join(",") << "\n"
+      index += 1
+    end
+  end
+end
+
 def write_distance_matrix(filename, parties_full_names, matrix)
   puts "Writing data to files #{filename}..."
   File.open(filename, "w") do |f|
@@ -103,6 +115,7 @@ def process_state(state)
   parties_full_names = parties.map{|p| lookup_party_full_name(p)}
 
   write_distance_matrix("distance_#{state}.dat", parties_full_names, matrix)
+  write_distance_matrix_as_csv("distance_#{state}.csv", parties_full_names, matrix)
 end
 
 ["act", "nsw", "nt", "qld", "sa", "tas", "vic", "wa"].each{|s| process_state(s)}
