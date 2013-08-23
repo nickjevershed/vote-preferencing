@@ -1,5 +1,5 @@
 use Rack::Static,
-  :urls => ["/nsw.json"],
+  :urls => ["/nsw.json", "/static.html", "/nsw-coords.csv"],
   :root => "public"
 
 run lambda { |env|

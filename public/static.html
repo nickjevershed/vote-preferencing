@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  display:none;
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  /*stroke: #000;*/
+  pointer-events: none;
+  font: 10px sans-serif;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 20, right: 50, bottom: 30, left: 50},
+    height = 900; - margin.top - margin.bottom,
+    width = height; //960 - margin.left - margin.right;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("nsw-coords.csv", function(error, data) {
+  data.forEach(function(d){
+    d.x = parseFloat(d.x);
+    d.y = parseFloat(d.y);
+  });
+  // hardcode extents for now
+  var extents = [-100, 120];
+  x.domain(extents).nice();
+  y.domain(extents).nice();
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+  var dot = svg.selectAll(".dot")
+    .data(data)
+    .enter()
+    .append('g')
+    .attr("class", "dot");
+
+  dot.append("text")
+      .attr("x", function(d) { return x(d.x); })
+      .attr("y", function(d) { return y(d.y); })
+      .attr("dy", ".35em")
+      //.style("text-anchor", "end")
+      .text(function(d) { return d.party.replace(/ party.*/i, ''); });
+        /*
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", function(d) { return x(d.x); })
+      .attr("cy", function(d) { return y(d.y); })
+      .style("fill", function(d) { return color(d.party); });
+      */
+});
+
+</script>
