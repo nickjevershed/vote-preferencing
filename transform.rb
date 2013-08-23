@@ -43,6 +43,7 @@ def group_info(group_file)
   ticket = group["tickets"].first
   if ticket.nil?
     # No ticket was submitted to the AEC
+    puts "INFO: No ticket was submitted in #{group_file}"
     return {:party => group_party}
   end
   party_order = ticket.map{|t| party(t)}
