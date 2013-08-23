@@ -51,7 +51,7 @@ var force = d3.layout.force()
     })
     //.charge(100)
     .charge(function(d){
-      return activeLink ? -100 : -1 * Math.pow(2, d.mutualValue);
+      return /*activeLink ? -100 :*/ -1 * Math.pow(2, d.mutualValue);
       //return -1 * d.value;
     })
     .size([width, height])
