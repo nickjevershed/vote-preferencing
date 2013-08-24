@@ -7,7 +7,7 @@ graph <- function(fit, d2, state) {
   x <- fit$points[,1]
   y <- fit$points[,2]
   plot(x, y, col="red", main=state, xlab="", ylab="", xaxt='n', yaxt='n', frame.plot=FALSE)
-  pointLabel(x, y, labels = row.names(d2), cex=1, xpd=FALSE)
+  pointLabel(x, y, labels = row.names(d2), cex=1, xpd=TRUE)
 }
 
 process <- function(state, label) {
