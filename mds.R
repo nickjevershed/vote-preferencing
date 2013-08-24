@@ -29,3 +29,11 @@ process("sa", "SA")
 process("tas", "TAS")
 process("vic", "VIC")
 process("wa", "WA")
+
+# Process the example data
+d = read.table("example.dat", header=TRUE)
+# Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
+d2 = d + t(d)
+svg("output/example.svg", width=7, height=7)
+graph(cmdscale(d2, eig=TRUE, k=2), d2, "")
+dev.off()
