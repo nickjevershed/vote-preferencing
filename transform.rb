@@ -16,6 +16,59 @@
 
 require "json"
 
+SHORTER_NAMES = {
+  "Animal Justice Party" => "Animal Justice",
+  "Australia First" => "Australia First",
+  "Australian Christian Party" => "Australian Christian Party",
+  "Australian Democrats" => "Democrats",
+  "Australian First Nations Political Party" => "First Nations",
+  "Australian Independents" => "Australian Independents",
+  "Australian Labor Party" => "Labor",
+  "Australian Motoring Enthusiast Party" => "Motoring Enthusiast",
+  "Australian Protectionist Party" => "Protectionist",
+  "Australian Sex Party" => "Sex",
+  "Australian Sports Party" => "Sports",
+  "Australian Voice Party" => "Voice",
+  "Bank Reform Party" => "Bank Reform",
+  "Building Australia Party" => "Building Australia",
+  "Bullet Train For Australia" => "Bullet Train For Australia",
+  "Carers Alliance" => "Carers Alliance",
+  "Christian Democratic Party" => "Christian Democratic",
+  "Citizens Electoral Council" => "Citizens Electoral Council",
+  "Country Alliance" => "Country Alliance",
+  "Country Liberals" => "Country Liberals",
+  "Democratic Labour Party" => "Democratic Labour",
+  "Drug Law Reform" => "Drug Law Reform",
+  "Family First" => "Family First",
+  "Fishing and Lifestyle Party" => "Fishing and Lifestyle",
+  "Future Party" => "Future",
+  "Help End Marijuana Prohibition" => "Help End Marijuana Prohibition",
+  "Katter's Australian Party" => "Katter's Australian",
+  "Liberal Democratic Party" => "Liberal Democratic",
+  "Liberal National Party" => "Liberal National",
+  "Nick Xenophon Group" => "Nick Xenophon",
+  "No Carbon Tax Climate Sceptics" => "No Carbon Tax Climate Sceptics",
+  "Non-Custodial Parents Party (Equal Parenting)" => "Non-Custodial Parents",
+  "One Nation" => "One Nation",
+  "Outdoor Recreation Party (Stop The Greens)" => "Outdoor Recreation",
+  "Palmer United Australia" => "Palmer United",
+  "Pirate Party" => "Pirate",
+  "Republican Party of Australia" => "Republican",
+  "Rise Up Australia" => "Rise Up",
+  "Secular Party" => "Secular",
+  "Senator Online" => "Senator Online",
+  "Shooters and Fishers Party" => "Shooters and Fishers",
+  "Smokers Rights Party" => "Smokers Rights",
+  "Socialist Alliance" => "Socialist Alliance",
+  "Socialist Equality Party" => "Socialist Equality",
+  "Stable Population Party" => "Stable Population",
+  "Stop CSG Party" => "Stop CSG",
+  "The Greens" => "Greens",
+  "Uniting Australia Party" => "Uniting Australia",
+  "Voluntary Euthanasia" => "Voluntary Euthanasia",
+  "Wikileaks Party" => "Wikileaks"
+}
+
 def party(person_label)
   person = JSON.load(File.open("belowtheline/data/people/#{person_label}.json"))
   person["party"] || "ind"
@@ -87,10 +140,10 @@ end
 def lookup_party_full_name(party_code)
   # Special handling for our "made up" party the coalition
   if party_code == "coa"
-    "Coalition (Lib/Nat)"
+    "Coalition"
   else
     party = JSON.load(File.open("belowtheline/data/parties/#{party_code}.json"))
-    party["name"]
+    SHORTER_NAMES[party["name"]]
   end
 end
 
