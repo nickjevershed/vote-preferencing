@@ -49,15 +49,20 @@ def group_info(group_file)
   party_order = ticket.map{|t| party(t)}
   # Do coalition substitution
   party_order = party_order.map{|p| (p == "lib" || p == "nat") ? "coa" : p}
+  # Remove independents
+  party_order = party_order.reject{|p| p == "ind"}
+  # Only keep the first instance of a party
+  party_order2 = []
+  party_order.each do |party|
+    unless party_order2.include?(party)
+      party_order2 << party
+    end
+  end
   party_scores = {}
-  party_order.each_with_index do |party, i|
-    party_scores[party] = (party_scores[party] || []).push(i)
+  party_order2.each_with_index do |party, i|
+    party_scores[party] = i
   end
-  combined_party_scores = {}
-  party_scores.each do |p, v|
-    combined_party_scores[p] = v.min
-  end
-  {:party => group_party, :distances => combined_party_scores}
+  {:party => group_party, :distances => party_scores}
 end
 
 def party_hash_to_array(infos, parties)
@@ -109,7 +114,7 @@ def process_state(state)
     infos[i[:party]] = i[:distances]
   end
 
-  parties = infos.keys.uniq.sort.reject{|p| p == "ind" || infos[p].nil?}
+  parties = infos.keys.uniq.sort.reject{|p| infos[p].nil?}
 
   matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
   # Convert parties to full names
