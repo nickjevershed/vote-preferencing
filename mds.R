@@ -1,7 +1,7 @@
 # Run this within R with:
 # source("mds.R")
 
-graph <- function(fit) {
+graph <- function(fit, d2) {
   x <- fit$points[,1]
   y <- fit$points[,2]
   plot(x, y, type="n")
@@ -13,9 +13,9 @@ process <- function(state) {
   # Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
   d2 = d + t(d)
   fit <- cmdscale(d2, eig=TRUE, k=2)
-  #graph(fit)
+  graph(fit, d2)
   svg(sprintf("output/%s.svg", state), width=7, height=7)
-  graph(fit)
+  graph(fit, d2)
   dev.off()
   write.csv(fit$points, sprintf("output/%s-coords.csv", state))  
 }
