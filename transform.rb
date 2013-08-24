@@ -46,7 +46,7 @@ def lookup_tickets(group_file)
   {:party => group_party, :tickets => tickets}
 end
 
-def group_info(group_file)
+def group_info(group_file, parties_to_ignore)
   a = lookup_tickets(group_file)
   if a[:tickets].nil?
     return {:party => a[:party]}
@@ -56,12 +56,12 @@ def group_info(group_file)
   puts "Don't currently support more than one ticket per group" if a[:tickets].count > 1
   ticket = a[:tickets].first
   group_party = a[:party]
-  
+
   party_order = ticket.map{|t| party(t)}
   # Do coalition substitution
   party_order = party_order.map{|p| (p == "lib" || p == "nat") ? "coa" : p}
-  # Remove independents
-  party_order = party_order.reject{|p| p == "ind"}
+  # Remove parties that we want to ignore (no tickets and independents)
+  party_order = party_order.reject{|p| parties_to_ignore.include?(p)}
   # Only keep the first instance of a party
   party_order2 = []
   party_order.each do |party|
@@ -120,12 +120,17 @@ end
 
 def process_state(state)
   infos = {}
+
+  # Ignore independents and parties that have not submitted a ticket
+  parties_to_ignore = Dir.glob("belowtheline/data/groups/#{state}-*.json").map{|file| lookup_tickets(file)}.
+    select{|a| a[:tickets].nil?}.map{|a| a[:party]}.uniq
+
   Dir.glob("belowtheline/data/groups/#{state}-*.json").each do |file|
-    i = group_info(file)
-    infos[i[:party]] = i[:distances]
+    i = group_info(file, parties_to_ignore)
+    infos[i[:party]] = i[:distances] if i[:distances]
   end
 
-  parties = infos.keys.uniq.sort.reject{|p| infos[p].nil?}
+  parties = infos.keys.uniq.sort
 
   matrix = party_hash_to_array(infos, parties).map{|h| party_hash_to_array(h, parties)}
   # Convert parties to full names
