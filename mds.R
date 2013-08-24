@@ -1,11 +1,13 @@
 # Run this within R with:
 # source("mds.R")
 
+library("maptools")
+
 graph <- function(fit, d2) {
   x <- fit$points[,1]
   y <- fit$points[,2]
-  plot(x, y, type="n")
-  text(x, y, labels = row.names(d2), cex=.5)
+  plot(x, y, col="red")
+  pointLabel(x, y, labels = row.names(d2), cex=.75)
 }
 
 process <- function(state) {
