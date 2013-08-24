@@ -9,15 +9,15 @@ graph <- function(fit) {
 }
 
 process <- function(state) {
-  d = read.table(sprintf("distance_%s.dat", state), header=TRUE)
+  d = read.table(sprintf("output/distance_%s.dat", state), header=TRUE)
   # Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
   d2 = d + t(d)
   fit <- cmdscale(d2, eig=TRUE, k=2)
   #graph(fit)
-  svg(sprintf("%s.svg", state), width=7, height=7)
+  svg(sprintf("output/%s.svg", state), width=7, height=7)
   graph(fit)
   dev.off()
-  write.csv(fit$points, sprintf("%s-coords.csv", state))  
+  write.csv(fit$points, sprintf("output/%s-coords.csv", state))  
 }
 
 process("act")

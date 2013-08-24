@@ -136,8 +136,8 @@ def process_state(state)
   # Convert parties to full names
   parties_full_names = parties.map{|p| lookup_party_full_name(p)}
 
-  write_distance_matrix("distance_#{state}.dat", parties_full_names, matrix)
-  write_distance_matrix_as_csv("distance_#{state}.csv", parties_full_names, matrix)
+  write_distance_matrix("output/distance_#{state}.dat", parties_full_names, matrix)
+  write_distance_matrix_as_csv("output/distance_#{state}.csv", parties_full_names, matrix)
 end
 
 ["act", "nsw", "nt", "qld", "sa", "tas", "vic", "wa"].each{|s| process_state(s)}
