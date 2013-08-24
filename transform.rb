@@ -21,7 +21,7 @@ def party(person_label)
   person["party"] || "ind"
 end
 
-def group_info(group_file)
+def lookup_tickets(group_file)
   group = JSON.load(File.open(group_file))
   # Special handling for coalition. We will treat them as one party
   if group["parties"] == ["lib", "nat"] || group["parties"] == ["lib"] || group["parties"] == ["nat"] ||
@@ -37,15 +37,26 @@ def group_info(group_file)
     return {:party => "ind"}
   end
 
-  puts "Don't currently support more than one ticket per group" if group["tickets"].count > 1
-  # Just going to take the first ticket for the time being. We really should calculate the
-  # scores for each ticket and then average them
-  ticket = group["tickets"].first
-  if ticket.nil?
+  tickets = group["tickets"]
+  if tickets.empty?
     # No ticket was submitted to the AEC
     puts "INFO: No ticket was submitted in #{group_file}"
     return {:party => group_party}
   end
+  {:party => group_party, :tickets => tickets}
+end
+
+def group_info(group_file)
+  a = lookup_tickets(group_file)
+  if a[:tickets].nil?
+    return {:party => a[:party]}
+  end
+  # Just going to take the first ticket for the time being. We really should calculate the
+  # scores for each ticket and then average them
+  puts "Don't currently support more than one ticket per group" if a[:tickets].count > 1
+  ticket = a[:tickets].first
+  group_party = a[:party]
+  
   party_order = ticket.map{|t| party(t)}
   # Do coalition substitution
   party_order = party_order.map{|p| (p == "lib" || p == "nat") ? "coa" : p}
