@@ -77,14 +77,9 @@ end
 def lookup_tickets(group_file)
   group = JSON.load(File.open(group_file))
   # Special handling for coalition. We will treat them as one party
-  if group["parties"] == ["lib", "nat"] || group["parties"] == ["lib"] || group["parties"] == ["nat"] ||
-    group["parties"] == ["nat", "lib"] || group["parties"] == ["clp"] || group["parties"] == ["lnp"]
-      group_party = "coa"
-  elsif group["parties"].count <= 1
-    group_party = group["parties"].first
-  else
-    raise "Can't currently handle multiple parties in a group"
-  end
+  group["parties"] = group["parties"].map{|p| merge_coalition(p)}.uniq
+  raise "Can't currently handle multiple parties in a group" if group["parties"].count > 1
+  group_party = group["parties"].first
 
   if group_party.nil?
     return {:party => "ind"}
@@ -97,6 +92,10 @@ def lookup_tickets(group_file)
     return {:party => group_party}
   end
   {:party => group_party, :tickets => tickets}
+end
+
+def merge_coalition(party)
+  ["lib", "nat", "clp", "lnp"].include?(party) ? "coa" : party
 end
 
 def group_info(group_file, parties_to_ignore)
@@ -112,7 +111,7 @@ def group_info(group_file, parties_to_ignore)
 
   party_order = ticket.map{|t| party(t)}
   # Do coalition substitution
-  party_order = party_order.map{|p| (p == "lib" || p == "nat" || p == "clp" || p == "lnp") ? "coa" : p}
+  party_order = party_order.map{|p| merge_coalition(p)}
   # Remove parties that we want to ignore (no tickets and independents)
   party_order = party_order.reject{|p| parties_to_ignore.include?(p)}
   # Only keep the first instance of a party
