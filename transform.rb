@@ -98,17 +98,7 @@ def merge_coalition(party)
   ["lib", "nat", "clp", "lnp"].include?(party) ? "coa" : party
 end
 
-def group_info(group_file, parties_to_ignore)
-  a = lookup_tickets(group_file)
-  if a[:tickets].nil?
-    return {:party => a[:party]}
-  end
-  # Just going to take the first ticket for the time being. We really should calculate the
-  # scores for each ticket and then average them
-  puts "Don't currently support more than one ticket per group" if a[:tickets].count > 1
-  ticket = a[:tickets].first
-  group_party = a[:party]
-
+def calculate_distances(ticket, parties_to_ignore)
   party_order = ticket.map{|t| party(t)}
   # Do coalition substitution
   party_order = party_order.map{|p| merge_coalition(p)}
@@ -125,6 +115,21 @@ def group_info(group_file, parties_to_ignore)
   party_order2.each_with_index do |party, i|
     party_scores[party] = i
   end
+  party_scores
+end
+
+def group_info(group_file, parties_to_ignore)
+  a = lookup_tickets(group_file)
+  if a[:tickets].nil?
+    return {:party => a[:party]}
+  end
+  # Just going to take the first ticket for the time being. We really should calculate the
+  # scores for each ticket and then average them
+  puts "Don't currently support more than one ticket per group: #{group_file}" if a[:tickets].count > 1
+  ticket = a[:tickets].first
+  group_party = a[:party]
+
+  party_scores = calculate_distances(ticket, parties_to_ignore)
   {:party => group_party, :distances => party_scores}
 end
 
