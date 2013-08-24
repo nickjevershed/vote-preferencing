@@ -54,7 +54,7 @@ SHORTER_NAMES = {
   "Palmer United Australia" => "Palmer United",
   "Pirate Party" => "Pirate Party",
   "Republican Party of Australia" => "Republican",
-  "Rise Up Australia" => "Rise Up",
+  "Rise Up Australia" => "Rise Up Australia",
   "Secular Party" => "Secular Party",
   "Senator Online" => "Senator Online",
   "Shooters and Fishers Party" => "Shooters and Fishers",
@@ -78,7 +78,7 @@ def lookup_tickets(group_file)
   group = JSON.load(File.open(group_file))
   # Special handling for coalition. We will treat them as one party
   if group["parties"] == ["lib", "nat"] || group["parties"] == ["lib"] || group["parties"] == ["nat"] ||
-    group["parties"] == ["nat", "lib"]
+    group["parties"] == ["nat", "lib"] || group["parties"] == ["clp"] || group["parties"] == ["lnp"]
       group_party = "coa"
   elsif group["parties"].count <= 1
     group_party = group["parties"].first
@@ -112,7 +112,7 @@ def group_info(group_file, parties_to_ignore)
 
   party_order = ticket.map{|t| party(t)}
   # Do coalition substitution
-  party_order = party_order.map{|p| (p == "lib" || p == "nat") ? "coa" : p}
+  party_order = party_order.map{|p| (p == "lib" || p == "nat" || p == "clp" || p == "lnp") ? "coa" : p}
   # Remove parties that we want to ignore (no tickets and independents)
   party_order = party_order.reject{|p| parties_to_ignore.include?(p)}
   # Only keep the first instance of a party
