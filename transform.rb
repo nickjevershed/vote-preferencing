@@ -11,8 +11,6 @@
 # 2. Combine data from different states
 # 3. Don't entirely ignore parties that have not submitted a ticket (because we can still get information
 # from how the other parties preference that party)
-# 4. Handle situation where parties submit more than one ticket. At the moment we're just looking at
-# the first ticket
 
 require "json"
 
@@ -88,7 +86,7 @@ def lookup_tickets(group_file)
   tickets = group["tickets"]
   if tickets.empty?
     # No ticket was submitted to the AEC
-    puts "INFO: No ticket was submitted in #{group_file}"
+    puts "INFO: No ticket submitted in #{group_file}"
     return {:party => group_party}
   end
   {:party => group_party, :tickets => tickets}
@@ -118,19 +116,30 @@ def calculate_distances(ticket, parties_to_ignore)
   party_scores
 end
 
+def average_array(a)
+  a.inject{ |sum, el| sum + el }.to_f / a.size
+end
+
+# Where there are multiple tickets average them
+def average_distances(distances)
+  parties = distances.first.keys
+  result = {}
+  parties.each do |party|
+    result[party] = average_array(distances.map{|d| d[party]})
+  end
+  result
+end
+
 def group_info(group_file, parties_to_ignore)
   a = lookup_tickets(group_file)
-  if a[:tickets].nil?
-    return {:party => a[:party]}
+  tickets = a[:tickets]
+  party = a[:party]
+  if tickets.nil?
+    return {:party => party}
   end
-  # Just going to take the first ticket for the time being. We really should calculate the
-  # scores for each ticket and then average them
-  puts "Don't currently support more than one ticket per group: #{group_file}" if a[:tickets].count > 1
-  ticket = a[:tickets].first
-  group_party = a[:party]
-
-  party_scores = calculate_distances(ticket, parties_to_ignore)
-  {:party => group_party, :distances => party_scores}
+  distances = tickets.map {|ticket| calculate_distances(ticket, parties_to_ignore)}
+  party_scores = average_distances(distances)
+  {:party => party, :distances => party_scores}
 end
 
 def party_hash_to_array(infos, parties)
