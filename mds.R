@@ -4,22 +4,26 @@
 library("maptools")
 library("MASS")
 
-graph <- function(fit, d2, state) {
+# Graph and write to file as svg
+graph <- function(fit, d2, label, filename) {
+  svg(filename, width=7, height=7)
   x <- fit$points[,1]
   y <- fit$points[,2]
-  plot(x, y, col="red", main=state, xlab="", ylab="", xaxt='n', yaxt='n', frame.plot=FALSE)
+  plot(x, y, col="red", main=label, xlab="", ylab="", xaxt='n', yaxt='n', frame.plot=FALSE)
   pointLabel(x, y, labels = row.names(d2), cex=1, xpd=TRUE)
+  dev.off()
+}
+
+calculate <- function(d) {
+  # Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
+  # Also make matrix from list
+  return(isoMDS(do.call(rbind, d + t(d)), k=2))
 }
 
 process <- function(state, label) {
   d = read.table(sprintf("output/distance_%s.dat", state), header=TRUE)
-  # Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
-  # Also make matrix from list
-  d2 = do.call(rbind, d + t(d))
-  fit <- isoMDS(d2, k=2)
-  svg(sprintf("output/%s.svg", state), width=7, height=7)
-  graph(fit, d2, label)
-  dev.off()
+  fit <- calculate(d)
+  graph(fit, d, label, sprintf("output/%s.svg", state))
   write.csv(fit$points, sprintf("output/%s-coords.csv", state))  
 }
 
@@ -34,8 +38,4 @@ process("wa", "WA")
 
 # Process the example data
 d = read.table("example.dat", header=TRUE)
-# Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
-d2 = d + t(d)
-svg("output/example.svg", width=7, height=7)
-graph(cmdscale(d2, eig=TRUE, k=2), d2, "")
-dev.off()
+graph(calculate(d), d, "", "output/example.svg")
