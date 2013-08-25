@@ -38,4 +38,8 @@ process("wa", "WA")
 
 # Process the example data
 d = read.table("example.dat", header=TRUE)
-graph(calculate(d), d, "", "output/example.svg")
+fit <- calculate(d)
+graph(fit, d, "", "output/example.svg")
+write.csv(fit$points, "output/example-coords.csv")
+# Recalculate distances
+d2 = dist(fit$points)
