@@ -2,6 +2,7 @@
 # source("mds.R")
 
 library("maptools")
+library("MASS")
 
 graph <- function(fit, d2, state) {
   x <- fit$points[,1]
@@ -13,8 +14,9 @@ graph <- function(fit, d2, state) {
 process <- function(state, label) {
   d = read.table(sprintf("output/distance_%s.dat", state), header=TRUE)
   # Make the matrix symmetric. Simplistic - puts equal weight on preferencing in both directions
-  d2 = d + t(d)
-  fit <- cmdscale(d2, eig=TRUE, k=2)
+  # Also make matrix from list
+  d2 = do.call(rbind, d + t(d))
+  fit <- isoMDS(d2, k=2)
   svg(sprintf("output/%s.svg", state), width=7, height=7)
   graph(fit, d2, label)
   dev.off()
