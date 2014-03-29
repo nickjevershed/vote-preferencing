@@ -27,19 +27,19 @@ process <- function(state, label) {
   write.csv(fit$points, sprintf("output/%s-coords.csv", state))  
 }
 
-process("act", "ACT")
-process("nsw", "NSW")
-process("nt", "NT")
-process("qld", "QLD")
-process("sa", "SA")
-process("tas", "TAS")
-process("vic", "VIC")
+# process("act", "ACT")
+# process("nsw", "NSW")
+# process("nt", "NT")
+# process("qld", "QLD")
+# process("sa", "SA")
+# process("tas", "TAS")
+# process("vic", "VIC")
 process("wa", "WA")
 
-# Process the example data
-d = read.table("example.dat", header=TRUE)
-fit <- calculate(d)
-graph(fit, d, "", "output/example.svg")
-write.csv(fit$points, "output/example-coords.csv")
-# Recalculate distances
-d2 = dist(fit$points)
+# # Process the example data
+# d = read.table("example.dat", header=TRUE)
+# fit <- calculate(d)
+# graph(fit, d, "", "output/example.svg")
+# write.csv(fit$points, "output/example-coords.csv")
+# # Recalculate distances
+# d2 = dist(fit$points)
